@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago Parcial</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .info-pedido {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        .producto-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .producto-item:hover {
+            background-color: #f9f9f9;
+        }
+        .producto-check {
+            margin-right: 15px;
+        }
+        .producto-info {
+            flex-grow: 1;
+        }
+        .producto-nombre {
+            font-weight: bold;
+        }
+        .producto-detalles {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .producto-precio {
+            font-weight: bold;
+            color: #4CAF50;
+            min-width: 80px;
+            text-align: right;
+        }
+        .total-container {
+            margin-top: 20px;
+            text-align: right;
+            font-size: 1.2em;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .botones {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-primario {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-secundario {
+            background-color: #f1f1f1;
+            color: #333;
+        }
+        .selector-container {
+            margin-bottom: 20px;
+        }
+        #selector-pedido {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pago Parcial</h1>
+        
+        <div class="selector-container">
+            <select id="selector-pedido">
+                <option value="">Selecciona un pedido...</option>
+                <!-- Las opciones se cargarán dinámicamente -->
+            </select>
+        </div>
+        
+        <div id="info-pedido" class="info-pedido" style="display: none;">
+            <div id="cliente-mesa"></div>
+            <div id="fecha-hora"></div>
+        </div>
+        
+        <div id="productos-container">
+            <!-- Los productos se cargarán dinámicamente aquí -->
+        </div>
+        
+        <div class="total-container">
+            <span>Total a Pagar: </span>
+            <span id="total-pago">$0.00</span>
+        </div>
+        
+        <div class="botones">
+            <button id="btn-cancelar" class="btn btn-secundario">Cancelar</button>
+            <button id="btn-confirmar" class="btn btn-primario">Confirmar Pago</button>
+        </div>
+    </div>
+
+    <script>
+        // Cargar datos desde localStorage
+        function cargarDatos(clave) {
+            const datos = localStorage.getItem(clave);
+            return datos ? JSON.parse(datos) : null;
+        }
+        
+        // Guardar datos en localStorage
+        function guardarDatos(clave, datos) {
+            localStorage.setItem(clave, JSON.stringify(datos));
+        }
+        
+        // Formatear precio
+        function formatearPrecio(precio) {
+            return `$${precio.toFixed(2)}`;
+        }
+        
+        // Variables globales
+        let pedidoActual = null;
+        let itemsSeleccionados = [];
+        
+        // Cargar pedidos en el selector
+        function cargarPedidosEnSelector() {
+            const selector = document.getElementById('selector-pedido');
+            
+            // Limpiar opciones actuales, manteniendo la primera
+            while (selector.options.length > 1) {
+                selector.remove(1);
+            }
+            
+            // Cargar pagos
+            const pagos = cargarDatos('pagos') || [];
+            const pagosPendientes = pagos.filter(pago => !pago.completado);
+            
+            // Agregar opciones al selector
+            pagosPendientes.forEach(pago => {
+                const option = document.createElement('option');
+                option.value = pago.id;
+                option.textContent = `Mesa ${pago.pedidoOriginal.mesa} - ${pago.pedidoOriginal.cliente} - ${formatearPrecio(pago.totalPendiente)}`;
+                selector.appendChild(option);
+            });
+        }
+        
+        // Mostrar información del pedido seleccionado
+        function mostrarInfoPedido() {
+            const selector = document.getElementById('selector-pedido');
+            const pagoId = selector.value;
+            
+            if (!pagoId) {
+                document.getElementById('info-pedido').style.display = 'none';
+                document.getElementById('productos-container').innerHTML = '';
+                document.getElementById('total-pago').textContent = '$0.00';
+                return;
+            }
+            
+            // Cargar pagos
+            const pagos = cargarDatos('pagos') || [];
+            const pago = pagos.find(p => p.id === pagoId);
+            
+            if (!pago) {
+                alert('Error: No se encontró el pago seleccionado');
+                return;
+            }
+            
+            // Guardar referencia al pago actual
+            pedidoActual = pago;
+            itemsSeleccionados = [];
+            
+            // Mostrar información del pedido
+            document.getElementById('info-pedido').style.display = 'block';
+            document.getElementById('cliente-mesa').textContent = `Cliente: ${pago.pedidoOriginal.cliente} - Mesa: ${pago.pedidoOriginal.mesa}`;
+            document.getElementById('fecha-hora').textContent = `Fecha: ${pago.pedidoOriginal.fecha} - Hora: ${pago.pedidoOriginal.hora}`;
+            
+            // Mostrar productos
+            const productosContainer = document.getElementById('productos-container');
+            productosContainer.innerHTML = '';
+            
+            if (!pago.itemsPendientes || pago.itemsPendientes.length === 0) {
+                productosContainer.innerHTML = '<p>No hay productos pendientes de pago</p>';
+            } else {
+                pago.itemsPendientes.forEach(item => {
+                    const productoItem = document.createElement('div');
+                    productoItem.className = 'producto-item';
+                    
+                    const check = document.createElement('input');
+                    check.type = 'checkbox';
+                    check.className = 'producto-check';
+                    check.setAttribute('data-id', item.id);
+                    check.setAttribute('data-precio', item.precio * item.cantidad);
+                    
+                    // Asignar evento de cambio
+                    check.addEventListener('change', function() {
+                        seleccionarItem(this, item.id, item.precio * item.cantidad);
+                    });
+                    
+                    const info = document.createElement('div');
+                    info.className = 'producto-info';
+                    
+                    const nombre = document.createElement('div');
+                    nombre.className = 'producto-nombre';
+                    nombre.textContent = `${item.cantidad}x ${item.nombre}`;
+                    
+                    info.appendChild(nombre);
+                    
+                    if (item.detalles) {
+                        const detalles = document.createElement('div');
+                        detalles.className = 'producto-detalles';
+                        detalles.textContent = item.detalles;
+                        info.appendChild(detalles);
+                    }
+                    
+                    const precio = document.createElement('div');
+                    precio.className = 'producto-precio';
+                    precio.textContent = formatearPrecio(item.precio * item.cantidad);
+                    
+                    productoItem.appendChild(check);
+                    productoItem.appendChild(info);
+                    productoItem.appendChild(precio);
+                    
+                    productosContainer.appendChild(productoItem);
+                });
+            }
+            
+            // Actualizar total
+            actualizarTotal();
+        }
+        
+        // Seleccionar item
+        function seleccionarItem(checkbox, itemId, precio) {
+            if (checkbox.checked) {
+                // Agregar item a la selección
+                itemsSeleccionados.push({
+                    id: itemId,
+                    precio: precio
+                });
+            } else {
+                // Quitar item de la selección
+                itemsSeleccionados = itemsSeleccionados.filter(item => item.id !== itemId);
+            }
+            
+            // Actualizar total
+            actualizarTotal();
+        }
+        
+        // Actualizar total
+        function actualizarTotal() {
+            let total = 0;
+            
+            itemsSeleccionados.forEach(item => {
+                total += item.precio;
+            });
+            
+            document.getElementById('total-pago').textContent = formatearPrecio(total);
+        }
+        
+        // Procesar pago parcial
+        function procesarPagoParcial() {
+            if (!pedidoActual) {
+                alert('No se ha seleccionado un pedido');
+                return;
+            }
+            
+            if (itemsSeleccionados.length === 0) {
+                alert('No se han seleccionado productos para pagar');
+                return;
+            }
+            
+            // Calcular total a pagar
+            let totalPagar = 0;
+            itemsSeleccionados.forEach(item => {
+                totalPagar += item.precio;
+            });
+            
+            // Confirmar pago
+            if (!confirm(`¿Confirmar pago parcial por ${formatearPrecio(totalPagar)}?`)) {
+                return;
+            }
+            
+            // Cargar pagos
+            let pagos = cargarDatos('pagos') || [];
+            const index = pagos.findIndex(p => p.id === pedidoActual.id);
+            
+            if (index === -1) {
+                alert('Error: No se encontró el pago en el sistema');
+                return;
+            }
+            
+            // Obtener fecha y hora actual
+            const fechaActual = new Date();
+            const fechaFormateada = fechaActual.toLocaleDateString();
+            const horaFormateada = fechaActual.toLocaleTimeString();
+            
+            // Crear registro de pago
+            const pagoParcial = {
+                id: 'pago_' + Date.now(),
+                fecha: fechaFormateada,
+                hora: horaFormateada,
+                monto: totalPagar,
+                items: itemsSeleccionados.map(item => {
+                    const itemOriginal = pedidoActual.itemsPendientes.find(i => i.id === item.id);
+                    return itemOriginal;
+                })
+            };
+            
+            // Actualizar pago en el sistema
+            // 1. Agregar pago realizado
+            if (!pagos[index].pagosRealizados) {
+                pagos[index].pagosRealizados = [];
+            }
+            pagos[index].pagosRealizados.push(pagoParcial);
+            
+            // 2. Actualizar total pagado y pendiente
+            pagos[index].totalPagado = (pagos[index].totalPagado || 0) + totalPagar;
+            pagos[index].totalPendiente = pagos[index].pedidoOriginal.total - pagos[index].totalPagado;
+            
+            // 3. Actualizar items pendientes
+            pagos[index].itemsPendientes = pagos[index].itemsPendientes.filter(item => 
+                !itemsSeleccionados.some(seleccionado => seleccionado.id === item.id)
+            );
+            
+            // 4. Verificar si se completó el pago
+            const pagoCompletado = pagos[index].totalPendiente <= 0.01; // Pequeña tolerancia para errores de redondeo
+            
+            if (pagoCompletado) {
+                pagos[index].completado = true;
+                pagos[index].fechaCompletado = fechaFormateada;
+                pagos[index].horaCompletado = horaFormateada;
+                
+                // Obtener todos los posibles IDs relacionados con este pedido
+                const pedidoId = pedidoActual.id;
+                const pedidoOriginalId = pedidoActual.pedidoOriginal.id;
+                const posiblesIds = [pedidoId, pedidoOriginalId];
+                
+                console.log('Eliminando pedido con IDs:', posiblesIds);
+                
+                // Eliminar del historial usando todos los posibles IDs
+                let historial = cargarDatos('historial') || [];
+                const historialAntes = historial.length;
+                historial = historial.filter(pedido => !posiblesIds.includes(pedido.id));
+                guardarDatos('historial', historial);
+                console.log(`Pedido eliminado del historial: ${historialAntes - historial.length} elementos eliminados`);
+                
+                // Eliminar de cocina usando todos los posibles IDs
+                let cocina = cargarDatos('cocina') || [];
+                const cocinaAntes = cocina.length;
+                cocina = cocina.filter(pedido => !posiblesIds.includes(pedido.id));
+                guardarDatos('cocina', cocina);
+                console.log(`Pedido eliminado de cocina: ${cocinaAntes - cocina.length} elementos eliminados`);
+                
+                // Eliminar de pedidos guardados usando todos los posibles IDs
+                let pedidosGuardados = cargarDatos('pedidos_guardados') || [];
+                const guardadosAntes = pedidosGuardados.length;
+                pedidosGuardados = pedidosGuardados.filter(pedido => !posiblesIds.includes(pedido.id));
+                guardarDatos('pedidos_guardados', pedidosGuardados);
+                console.log(`Pedido eliminado de pedidos guardados: ${guardadosAntes - pedidosGuardados.length} elementos eliminados`);
+                
+                // Forzar la actualización de las interfaces
+                // Esto garantiza que los cambios se reflejen inmediatamente
+                localStorage.setItem('_force_refresh', Date.now());
+            } else {
+                // Actualizar historial para reflejar pago parcial
+                let historial = cargarDatos('historial') || [];
+                const pedidoHistorialIndex = historial.findIndex(pedido => pedido.id === pedidoActual.id);
+                
+                if (pedidoHistorialIndex !== -1) {
+                    historial[pedidoHistorialIndex].pagoParcial = true;
+                    historial[pedidoHistorialIndex].ultimoPagoParcial = {
+                        fecha: fechaFormateada,
+                        hora: horaFormateada,
+                        monto: totalPagar
+                    };
+                    historial[pedidoHistorialIndex].totalPagado = pagos[index].totalPagado;
+                    historial[pedidoHistorialIndex].totalPendiente = pagos[index].totalPendiente;
+                    guardarDatos('historial', historial);
+                }
+            }
+            
+            // Guardar pagos actualizados
+            guardarDatos('pagos', pagos);
+            
+            // Guardar pago en reportes
+            let reportes = cargarDatos('reportes_pagos') || [];
+            reportes.push({
+                id: pagoParcial.id,
+                pedidoId: pedidoActual.id,
+                cliente: pedidoActual.pedidoOriginal.cliente,
+                mesa: pedidoActual.pedidoOriginal.mesa,
+                fechaPago: fechaFormateada,
+                horaPago: horaFormateada,
+                timestamp: fechaActual.getTime(),
+                monto: totalPagar,
+                tipoPago: 'parcial',
+                productos: pagoParcial.items
+            });
+            guardarDatos('reportes_pagos', reportes);
+            
+            // Mostrar mensaje de éxito
+            alert('Pago parcial procesado correctamente');
+            
+            // Volver a la página principal
+            window.location.href = 'index.html';
+        }
+        
+        // Configurar eventos
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar pedidos en el selector
+            cargarPedidosEnSelector();
+            
+            // Verificar si hay un ID de pago guardado en sessionStorage
+            const pagoId = sessionStorage.getItem('pago_parcial_id');
+            if (pagoId) {
+                // Seleccionar el pedido en el selector
+                const selector = document.getElementById('selector-pedido');
+                for (let i = 0; i < selector.options.length; i++) {
+                    if (selector.options[i].value === pagoId) {
+                        selector.selectedIndex = i;
+                        break;
+                    }
+                }
+                
+                // Mostrar la información del pedido
+                mostrarInfoPedido();
+                
+                // Limpiar el sessionStorage
+                sessionStorage.removeItem('pago_parcial_id');
+            }
+            
+            // Evento de cambio en el selector
+            document.getElementById('selector-pedido').addEventListener('change', mostrarInfoPedido);
+            
+            // Botón para confirmar pago
+            document.getElementById('btn-confirmar').addEventListener('click', procesarPagoParcial);
+            
+            // Botón para cancelar
+            document.getElementById('btn-cancelar').addEventListener('click', function() {
+                window.location.href = 'index.html';
+            });
+        });
+    </script>
+</body>
+</html>

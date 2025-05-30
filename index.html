@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Pedidos - Mesero</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div id="contador-limpieza" class="contador-limpieza">
+            <span class="contador-icono"><i class="fas fa-clock"></i></span>
+            <span class="contador-texto">Tiempo restante para limpieza automática: </span>
+            <span id="contador-tiempo" class="contador-valor">6:00:00</span>
+        </div>
+        <header>
+            <img src="Logo.png" alt="Logo Restaurante" class="logo">
+            <nav>
+                <ul>
+                    <li><a href="#" class="nav-link active" data-section="pedidos">Pedidos</a></li>
+                    <li><a href="#" class="nav-link" data-section="historial">Historial</a></li>
+                    <li><a href="#" class="nav-link" data-section="cocina">Cocina</a></li>
+                    <li><a href="#" class="nav-link" data-section="pagos">Pagos</a></li>
+                    <li><a href="#" class="nav-link" data-section="estadisticas">Estadísticas</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <!-- Sección de Pedidos -->
+            <section id="pedidos" class="section active">
+                <h2>Nuevo Pedido</h2>
+                <div class="cliente-info">
+                    <input type="text" id="nombre-cliente" placeholder="Nombre del cliente" required>
+                    <input type="text" id="mesa-numero" placeholder="Número de mesa" required>
+                </div>
+                
+                <div class="categorias-container">
+                    <div class="categorias">
+                        <button class="categoria-btn active" data-categoria="todos">Todos</button>
+                        <button class="categoria-btn" data-categoria="cortes">Cortes</button>
+                        <button class="categoria-btn" data-categoria="mariscos">Mariscos</button>
+                        <button class="categoria-btn" data-categoria="bandejas">Bandejas</button>
+                        <button class="categoria-btn" data-categoria="pizzas">Pizzas</button>
+                        <button class="categoria-btn" data-categoria="platos">Platos</button>
+                        <button class="categoria-btn" data-categoria="porciones_adicionales">Porciones</button>
+                        <button class="categoria-btn" data-categoria="bebidas">Bebidas</button>
+                        <button class="categoria-btn" data-categoria="otros">Otros</button>
+                    </div>
+                </div>
+                
+                <div class="productos-container">
+                    <div id="productos-lista" class="productos-lista"></div>
+                </div>
+                
+                <div class="pedido-actual">
+                    <h3>Pedido Actual</h3>
+                    <div id="items-pedido" class="items-pedido"></div>
+                    <div class="pedido-total">
+                        <span>Total:</span>
+                        <span id="total-pedido">$0.00</span>
+                    </div>
+                    <div class="pedido-botones">
+                        <button id="btn-venta-libre" class="btn-secundario">Venta Libre</button>
+                        <button id="btn-guardar-pedido" class="btn-secundario">Guardar Pedido</button>
+                        <button id="btn-generar-pedido" class="btn-primario">Generar Pedido</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección de Historial -->
+            <section id="historial" class="section">
+                <h2>Historial de Pedidos</h2>
+                <div class="historial-lista" id="historial-lista">
+                    <!-- Los pedidos se cargarán dinámicamente aquí -->
+                </div>
+            </section>
+
+            <!-- Sección de Cocina -->
+            <section id="cocina" class="section">
+                <h2>Pedidos para Cocina</h2>
+                <div class="cocina-pedidos" id="cocina-pedidos">
+                    <!-- Los pedidos para cocina se cargarán dinámicamente aquí -->
+                </div>
+            </section>
+
+            <!-- Sección de Pagos -->
+            <section id="pagos" class="section">
+                <h2>Pagos de Pedidos</h2>
+                <div class="pagos-acciones-globales" style="margin-bottom: 15px; padding: 10px; background-color: #f5f5f5; border-radius: 5px;">
+                    <p style="margin-bottom: 5px;"><strong>Nota:</strong> Si los botones de pago parcial no funcionan, usa el selector y botón de emergencia:</p>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select id="selector-pago-emergencia" style="padding: 8px; border-radius: 4px; flex-grow: 1;">
+                            <option value="">Selecciona un pedido...</option>
+                            <!-- Las opciones se cargarán dinámicamente -->
+                        </select>
+                        <button id="btn-pago-parcial-emergencia" style="padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">Pago Parcial</button>
+                    </div>
+                </div>
+                <div class="pagos-lista" id="pagos-lista">
+                    <!-- Los pedidos para pagar se cargarán dinámicamente aquí -->
+                </div>
+            </section>
+
+            <!-- Sección de Estadísticas -->
+            <section id="estadisticas" class="section seccion-estadisticas">
+                <h2>Estadísticas de Ventas</h2>
+                <div class="estadisticas-controles">
+                    <div class="filtro-periodo">
+                        <label for="periodo-estadisticas">Periodo:</label>
+                        <select id="periodo-estadisticas">
+                            <option value="hoy">Hoy</option>
+                            <option value="semana">Esta semana</option>
+                            <option value="mes">Este mes</option>
+                            <option value="personalizado">Personalizado</option>
+                        </select>
+                    </div>
+                    <div class="fechas-personalizadas" id="fechas-personalizadas" style="display: none;">
+                        <label for="fecha-inicio">Desde:</label>
+                        <input type="date" id="fecha-inicio">
+                        <label for="fecha-fin">Hasta:</label>
+                        <input type="date" id="fecha-fin">
+                        <button id="btn-aplicar-fechas" class="btn-secundario">Aplicar</button>
+                    </div>
+                    <div class="botones-reporte">
+                        <button id="btn-generar-reporte" class="btn-primario">Generar Reporte PDF</button>
+                    </div>
+                </div>
+                
+                <!-- Contenedor para el contenido de estadísticas -->
+                <div id="estadisticas-contenido" class="estadisticas-contenido">
+                    <div class="estadisticas-contenedor">
+                        <div class="grafica-container">
+                            <h3>Productos Más Vendidos</h3>
+                            <canvas id="grafica-productos"></canvas>
+                        </div>
+                        
+                        <div class="grafica-container">
+                            <h3>Pagos Recibidos</h3>
+                            <canvas id="grafica-pagos"></canvas>
+                        </div>
+                    
+                        <div class="estadisticas-resumen">
+                            <div class="estadistica-card">
+                                <h4>Total Ventas</h4>
+                                <div class="estadistica-valor" id="total-ventas">$0.00</div>
+                            </div>
+                            <div class="estadistica-card">
+                                <h4>Pedidos Completados</h4>
+                                <div class="estadistica-valor" id="total-pedidos">0</div>
+                            </div>
+                            <div class="estadistica-card">
+                                <h4>Ticket Promedio</h4>
+                                <div class="estadistica-valor" id="ticket-promedio">$0.00</div>
+                            </div>
+                            <div class="estadistica-card">
+                                <h4>Producto Más Vendido</h4>
+                                <div class="estadistica-valor" id="producto-top">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tabla-ventas-container">
+                        <h3>Detalle de Ventas por Producto</h3>
+                        <table class="tabla-ventas">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Categoría</th>
+                                    <th>Cantidad</th>
+                                    <th>Total</th>
+                                    <th>% del Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-productos-body">
+                                <!-- Datos de productos se cargarán dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modales -->
+    <div id="modal-opciones-corte" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Opciones para <span id="nombre-corte"></span></h3>
+            
+            <div class="opciones-grupo">
+                <h4>Término</h4>
+                <div id="terminos-opciones" class="opciones-lista"></div>
+            </div>
+            
+            <div class="opciones-grupo">
+                <h4>Porción Adicional (incluida)</h4>
+                <div id="porciones-opciones" class="opciones-lista"></div>
+            </div>
+            
+            <div class="opciones-grupo">
+                <h4>Cantidad</h4>
+                <div class="cantidad-control">
+                    <button id="btn-disminuir">-</button>
+                    <input type="number" id="cantidad-producto" value="1" min="1" max="10">
+                    <button id="btn-aumentar">+</button>
+                </div>
+            </div>
+            
+            <div class="modal-botones">
+                <button id="btn-cancelar-opciones" class="btn-secundario">Cancelar</button>
+                <button id="btn-agregar-corte" class="btn-primario">Agregar al Pedido</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-opciones-pizza" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Opciones para <span id="nombre-pizza"></span></h3>
+            
+            <div class="opciones-grupo">
+                <h4>Tipo de Pizza</h4>
+                <div class="tipo-pizza-opciones">
+                    <button class="tipo-pizza-btn active" data-tipo="completa">Completa</button>
+                    <button class="tipo-pizza-btn" data-tipo="mitad">Mitad y Mitad</button>
+                </div>
+            </div>
+            
+            <div id="mitades-opciones" class="opciones-grupo" style="display: none;">
+                <h4>Sabores</h4>
+                <div class="mitades-container">
+                    <div class="mitad">
+                        <h5>Primera Mitad</h5>
+                        <select id="primera-mitad"></select>
+                    </div>
+                    <div class="mitad">
+                        <h5>Segunda Mitad</h5>
+                        <select id="segunda-mitad"></select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="opciones-grupo">
+                <h4>Extras</h4>
+                <div id="extras-pizza" class="opciones-lista"></div>
+            </div>
+            
+            <div class="opciones-grupo">
+                <h4>Cantidad</h4>
+                <div class="cantidad-control">
+                    <button id="btn-disminuir-pizza">-</button>
+                    <input type="number" id="cantidad-pizza" value="1" min="1" max="10">
+                    <button id="btn-aumentar-pizza">+</button>
+                </div>
+            </div>
+            
+            <div class="modal-botones">
+                <button id="btn-cancelar-pizza" class="btn-secundario">Cancelar</button>
+                <button id="btn-agregar-pizza" class="btn-primario">Agregar al Pedido</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-venta-libre" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Venta Libre</h3>
+            
+            <div class="form-grupo">
+                <label for="nombre-producto-libre">Nombre del Producto:</label>
+                <input type="text" id="nombre-producto-libre" placeholder="Ingrese nombre del producto">
+            </div>
+            
+            <div class="form-grupo">
+                <label for="precio-producto-libre">Precio ($):</label>
+                <input type="number" id="precio-producto-libre" placeholder="0.00" step="0.01" min="0">
+            </div>
+            
+            <div class="form-grupo">
+                <label for="cantidad-producto-libre">Cantidad:</label>
+                <input type="number" id="cantidad-producto-libre" value="1" min="1">
+            </div>
+            
+            <div class="modal-botones">
+                <button id="btn-cancelar-venta-libre" class="btn-secundario">Cancelar</button>
+                <button id="btn-agregar-venta-libre" class="btn-primario">Agregar al Pedido</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-comprobante" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Comprobante de Pedido</h3>
+            
+            <div id="comprobante-contenido" class="comprobante-contenido">
+                <!-- El comprobante se generará dinámicamente aquí -->
+            </div>
+            
+            <div class="modal-botones">
+                <button id="btn-guardar-comprobante" class="btn-secundario">Guardar</button>
+                <button id="btn-descargar-comprobante" class="btn-secundario">Descargar PNG</button>
+                <button id="btn-whatsapp-comprobante" class="btn-primario">Enviar por WhatsApp</button>
+                <button id="btn-cerrar-comprobante" class="btn-secundario">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-pago-parcial" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Pago Parcial</h3>
+            
+            <div id="productos-pago-parcial" class="productos-pago-parcial">
+                <!-- Los productos para pago parcial se cargarán dinámicamente aquí -->
+            </div>
+            
+            <div class="pago-total">
+                <span>Total a Pagar:</span>
+                <span id="total-pago-parcial">$0.00</span>
+            </div>
+            
+            <div class="modal-botones">
+                <button id="btn-cancelar-pago-parcial" class="btn-secundario">Cancelar</button>
+                <button id="btn-confirmar-pago-parcial" class="btn-primario">Confirmar Pago</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="productos.js"></script>
+    <script src="utils.js"></script>
+    <script src="pedidos.js"></script>
+    <script src="historial.js"></script>
+    <script src="cocina.js"></script>
+    <script src="pagos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="estadisticas.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
