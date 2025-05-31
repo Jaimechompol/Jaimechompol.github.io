@@ -266,14 +266,7 @@ const productos = [
             { nombre: 'Porción adicional', cantidad: 1 }
         ]
     },
-    {
-        id: 26,
-        nombre: "Arroz marisco",
-        precio: 10.0,
-        categoria: CATEGORIAS.MARISCOS,
-        tipo: TIPOS_PRODUCTO.PLATO,
-        descripcion: ""
-    },
+    
     {
         id: 27,
         nombre: "Bandeja de mariscos + Bandeja Parrillera",
@@ -525,15 +518,7 @@ const productos = [
         descripcion: "Seco de gallina tradicional sin acompañamientos obligatorios",
         sinAcompanamientosObligatorios: true
     },
-    {
-        id: 55,
-        nombre: "Arroz con Camarón",
-        precio: 9.0,
-        categoria: CATEGORIAS.MARISCOS,
-        tipo: TIPOS_PRODUCTO.PLATO,
-        descripcion: "Arroz con camarón sin acompañamientos obligatorios",
-        sinAcompanamientosObligatorios: true
-    },
+    
     {
         id: 56,
         nombre: "Arroz Mariscos",
