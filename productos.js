@@ -428,7 +428,7 @@ const productos = [
     {
         id: 44,
         nombre: "Cola 1LT",
-        precio: 1.25,
+        precio: 1.00,
         categoria: CATEGORIAS.BEBIDAS,
         tipo: TIPOS_PRODUCTO.BEBIDA,
         descripcion: "Botella de cola de 1 litro"
