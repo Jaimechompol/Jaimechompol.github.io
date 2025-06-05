@@ -516,15 +516,7 @@ const productos = [
     },
     
     // PLATOS ESPECIALES SIN ACOMPAÑAMIENTOS OBLIGATORIOS
-    {
-        id: 55,
-        nombre: "Asado Completo",
-        precio: 10.0,
-        categoria: CATEGORIAS.PLATOS,
-        tipo: TIPOS_PRODUCTO.PLATO,
-        descripcion: "Plato de asado completo sin acompañamientos obligatorios",
-        sinAcompanamientosObligatorios: true
-    },
+    
     {
         id: 56,
         nombre: "Asado medio",
