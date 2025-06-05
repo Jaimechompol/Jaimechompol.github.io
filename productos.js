@@ -435,6 +435,14 @@ const productos = [
     },
     {
         id: 45,
+        nombre: "Cola 1.5 LT",
+        precio: 1.50,
+        categoria: CATEGORIAS.BEBIDAS,
+        tipo: TIPOS_PRODUCTO.BEBIDA,
+        descripcion: "Botella de cola de 1 litro"
+    },
+    {
+        id: 46,
         nombre: "Agua aromática",
         precio: 0.75,
         categoria: CATEGORIAS.BEBIDAS,
@@ -442,7 +450,7 @@ const productos = [
         descripcion: "Agua infusionada con hierbas"
     },
     {
-        id: 46,
+        id: 47,
         nombre: "Fuze tea personal",
         precio: 1.0,
         categoria: CATEGORIAS.BEBIDAS,
@@ -450,7 +458,7 @@ const productos = [
         descripcion: "Bebida de té saborizado individual"
     },
     {
-        id: 47,
+        id: 48,
         nombre: "Cerveza club Verde 1LT",
         precio: 3.5,
         categoria: CATEGORIAS.BEBIDAS,
@@ -458,7 +466,7 @@ const productos = [
         descripcion: "Cerveza Club Verde botella 1 litro"
     },
     {
-        id: 48,
+        id: 49,
         nombre: "Cerveza personal",
         precio: 1.5,
         categoria: CATEGORIAS.BEBIDAS,
@@ -466,23 +474,40 @@ const productos = [
         descripcion: "Botella personal de cerveza"
     },
     {
-        id: 49,
-        nombre: "Jarra de jugo",
+        id: 50,
+        nombre: "Jarra de limonada",
         precio: 3.5,
         categoria: CATEGORIAS.BEBIDAS,
         tipo: TIPOS_PRODUCTO.BEBIDA,
         descripcion: "Jarra de jugo natural"
     },
     {
-        id: 50,
+        id: 51,
+        nombre: "Jarra de Maracuya",
+        precio: 3.5,
+        categoria: CATEGORIAS.BEBIDAS,
+        tipo: TIPOS_PRODUCTO.BEBIDA,
+        descripcion: "Jarra de sangría con vino y frutas"
+    },
+    {
+        id: 52,
+        nombre: "Jarra de Guanabana",
+        precio: 3.5,
+        categoria: CATEGORIAS.BEBIDAS,
+        tipo: TIPOS_PRODUCTO.BEBIDA,
+        descripcion: "Jarra de sangría con vino y frutas"
+    },
+    {
+        id: 53,
         nombre: "Jarra de Sangría",
         precio: 16.0,
         categoria: CATEGORIAS.BEBIDAS,
         tipo: TIPOS_PRODUCTO.BEBIDA,
         descripcion: "Jarra de sangría con vino y frutas"
     },
+    
     {
-        id: 51,
+        id: 54,
         nombre: "Vino _ Champán",
         precio: 12.0,
         categoria: CATEGORIAS.BEBIDAS,
@@ -492,7 +517,7 @@ const productos = [
     
     // PLATOS ESPECIALES SIN ACOMPAÑAMIENTOS OBLIGATORIOS
     {
-        id: 52,
+        id: 55,
         nombre: "Asado Completo",
         precio: 10.0,
         categoria: CATEGORIAS.PLATOS,
@@ -501,7 +526,16 @@ const productos = [
         sinAcompanamientosObligatorios: true
     },
     {
-        id: 53,
+        id: 56,
+        nombre: "Asado medio",
+        precio: 3.5,
+        categoria: CATEGORIAS.PLATOS,
+        tipo: TIPOS_PRODUCTO.PLATO,
+        descripcion: "Plato de asado completo sin acompañamientos obligatorios",
+        sinAcompanamientosObligatorios: true
+    },
+    {
+        id: 57,
         nombre: "Picaditas de Carne",
         precio: 8.0,
         categoria: CATEGORIAS.PLATOS,
@@ -510,7 +544,7 @@ const productos = [
         sinAcompanamientosObligatorios: true
     },
     {
-        id: 54,
+        id: 58,
         nombre: "Seco de Gallina",
         precio: 7.5,
         categoria: CATEGORIAS.PLATOS,
@@ -520,7 +554,7 @@ const productos = [
     },
     
     {
-        id: 56,
+        id: 59,
         nombre: "Arroz Mariscos",
         precio: 10.0,
         categoria: CATEGORIAS.MARISCOS,
