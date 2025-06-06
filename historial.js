@@ -31,7 +31,21 @@ function cargarHistorial() {
 
 // Crear elemento HTML para un pedido del historial
 function crearElementoPedidoHistorial(pedido) {
-    const pedidoElement = crearElemento('div', { class: 'historial-item', 'data-id': pedido.id });
+    // Verificar si este pedido es el anterior de una edición
+    let esAnteriorEditado = false;
+    try {
+        // Buscar si hay un pedido editado relacionado en sessionStorage
+        const pedidoOriginalId = sessionStorage.getItem('pedido_original_id');
+        const pedidoNuevoId = sessionStorage.getItem('pedido_nuevo_id');
+        if (pedidoOriginalId && pedidoNuevoId && pedido.id === pedidoOriginalId) {
+            esAnteriorEditado = true;
+        }
+    } catch (e) {}
+
+    const pedidoElement = crearElemento('div', {
+        class: 'historial-item' + (esAnteriorEditado ? ' historial-item-anterior-editado' : ''),
+        'data-id': pedido.id
+    });
     
     // Header
     const headerElement = crearElemento('div', { class: 'historial-header' });
@@ -215,3 +229,15 @@ function eliminarPedidoHistorial(pedidoId) {
         cargarPagos();
     }
 }
+
+// Agregar estilos para resaltar el producto anterior editado
+const style = document.createElement('style');
+style.innerHTML = `
+.historial-item-anterior-editado {
+    background: #ffeaea !important;
+    border: 2px solid #c00 !important;
+    box-shadow: 0 0 8px #c003333;
+    opacity: 0.85;
+}
+`;
+document.head.appendChild(style);
