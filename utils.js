@@ -274,7 +274,9 @@ function guardarPedidoEnPagos(pedido) {
     if (document.getElementById('pagos').classList.contains('active')) {
         cargarPagos();
     }
-}/**
+}
+
+/**
  * Archivo de utilidades para la aplicación de pedidos
  * Contiene funciones comunes utilizadas en toda la aplicación
  */
@@ -461,66 +463,236 @@ function encontrarTerminoCortePorId(id) {
     return terminosCorte.find(termino => termino.id === id);
 }
 
-// Función para generar un comprobante en formato HTML
 function generarComprobanteHTML(pedido) {
-    const { cliente, mesa, items, total, fecha, hora, id } = pedido;
-    
-    // Calcular subtotal y número de artículos
-    const numArticulos = items.reduce((sum, item) => sum + item.cantidad, 0);
-    
+    let { cliente, mesa, items, total, fecha, hora } = pedido;
+
+    // Formatear la fecha a dd/mm/yyyy si viene en otro formato
+    if (fecha && fecha.match(/\d{1,2} de [a-zA-Z]+ de \d{4}/)) {
+        // Ejemplo: '6 de junio de 2025'
+        const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+        const partes = fecha.match(/(\d{1,2}) de ([a-zA-Z]+) de (\d{4})/);
+        if (partes) {
+            const dia = partes[1].padStart(2, '0');
+            const mes = (meses.indexOf(partes[2].toLowerCase()) + 1).toString().padStart(2, '0');
+            const anio = partes[3];
+            fecha = `${dia}/${mes}/${anio}`;
+        }
+    }
+
+    // Agrupar productos por tipo, combinando detalles adicionales
+    const productosAgrupados = items.reduce((agrupados, item) => {
+        const key = `${item.nombre}-${item.precio}`; // Agrupamos por nombre y precio
+        if (!agrupados[key]) {
+            agrupados[key] = {
+                nombre: item.nombre,
+                cantidad: 0,
+                precio: item.precio,
+                detalles: new Set(), // Usamos un Set para evitar duplicados
+            };
+        }
+        agrupados[key].cantidad += item.cantidad;
+        // Agregar detalles adicionales únicos
+        if (item.detalles) {
+            agrupados[key].detalles.add(item.detalles);
+        }
+        return agrupados;
+    }, {});
+
+    const listaAgrupada = Object.values(productosAgrupados);
+
     let html = `
-        <div class="comprobante-ticket">
-            <div class="comprobante-header">
-                <div class="comprobante-titulo">D' cary</div>
-                <div class="comprobante-subtitulo">Pedido Mesa ${mesa}</div>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+            .comprobante-factura {
+                max-width: 500px;
+                margin: 0 auto;
+                background: #fff;
+                border-radius: 18px;
+                border: 2px solid #222;
+                box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+                font-family: 'Segoe UI', Arial, sans-serif;
+                color: #222;
+                overflow: hidden;
+            }
+            .factura-header {
+                background: #222;
+                color: #fff;
+                padding: 18px 24px 10px 24px;
+                text-align: center;
+                border-bottom: 4px solid #c00;
+            }
+            .factura-header .nombre-empresa {
+                font-family: 'Bebas Neue', 'Arial Black', Arial, sans-serif;
+                font-size: 2.7rem;
+                font-weight: bold;
+                letter-spacing: 4px;
+                color: #fff;
+                background: linear-gradient(90deg, #fff 0%, #c00 40%, #222 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                text-fill-color: transparent;
+                text-shadow: 0 2px 8px #c00, 0 2px 0 #222, 0 0 2px #fff, 0 0 8px #fff;
+                margin-bottom: 2px;
+                text-transform: uppercase;
+                border-radius: 8px;
+                border: 2px solid #fff;
+                display: inline-block;
+                padding: 2px 18px 2px 18px;
+                box-shadow: 0 0 8px #fff, 0 0 2px #c00;
+                transition: all 0.3s;
+            }
+            .factura-header .nombre-empresa:hover {
+                letter-spacing: 8px;
+                filter: brightness(1.2) drop-shadow(0 0 8px #fff);
+            }
+            .factura-header .subtitulo {
+                font-size: 1.1rem;
+                color: #fff;
+                margin-bottom: 6px;
+            }
+            .factura-info {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+                padding: 12px 24px 0 24px;
+                font-size: 1rem;
+                margin-bottom: 8px;
+            }
+            .factura-info-row {
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                gap: 18px;
+                margin-bottom: 2px;
+            }
+            .factura-info-label {
+                font-weight: bold;
+                color: #c00;
+                margin-right: 4px;
+            }
+            .factura-info-dato {
+                color: #222;
+                font-weight: 500;
+            }
+            .factura-info-bloque {
+                display: flex;
+                align-items: center;
+                gap: 2px;
+            }
+            @media (max-width: 480px) {
+                .factura-info-row {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 2px;
+                }
+            }
+            .factura-tabla {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 18px 0 0 0;
+            }
+            .factura-tabla th {
+                background: #c00;
+                color: #fff;
+                padding: 8px 0;
+                font-size: 1rem;
+                border-bottom: 2px solid #222;
+            }
+            .factura-tabla td {
+                padding: 7px 4px;
+                border-bottom: 1px solid #eee;
+                text-align: center;
+                font-size: 1rem;
+            }
+            .factura-tabla .desc {
+                text-align: left;
+                padding-left: 10px;
+            }
+            .factura-total-row {
+                background: #222;
+                color: #fff;
+                font-weight: bold;
+                font-size: 1.2rem;
+            }
+            .factura-total-label {
+                text-align: right;
+                padding-right: 10px;
+            }
+            .factura-total-valor {
+                color: white;
+                font-size: 1.3rem;
+                font-weight: bold;
+            }
+            .factura-footer {
+                padding: 14px 24px 18px 24px;
+                text-align: center;
+                background: #f8f8f8;
+                border-top: 2px solid #c00;
+                font-size: 1.1rem;
+                color: #222;
+            }
+            .factura-item-detalles {
+                color: #c00;
+                font-size: 0.92em;
+                margin-left: 10px;
+            }
+        </style>
+        <div class="comprobante-factura">
+            <div class="factura-header">
+                <div class="nombre-empresa">Dcary</div>
+                <div class="subtitulo">Servicio a Mesa</div>
             </div>
-            
-            <div class="comprobante-info">
-                <div class="comprobante-info-row">
-                    <div class="comprobante-info-col">Fecha: ${fecha}</div>
-                    <div class="comprobante-info-col">Cliente: ${cliente}</div>
+            <div class="factura-info">
+                <div class="factura-info-row">
+                    <div class="factura-info-bloque"><span class="factura-info-label">Cliente:</span> <span class="factura-info-dato">${cliente}</span></div>
+                    <div class="factura-info-bloque"><span class="factura-info-label">Mesa:</span> <span class="factura-info-dato">${mesa}</span></div>
                 </div>
-                <div class="comprobante-info-row">
-                    <div class="comprobante-info-col">Hora: ${hora}</div>
-                    <div class="comprobante-info-col">Ticket #: ${id.substring(0, 6)}</div>
+                <div class="factura-info-row">
+                    <div class="factura-info-bloque"><span class="factura-info-label">Fecha:</span> <span class="factura-info-dato">${fecha}</span></div>
+                    <div class="factura-info-bloque"><span class="factura-info-label">Hora:</span> <span class="factura-info-dato">${hora}</span></div>
                 </div>
             </div>
-            
-            <div class="comprobante-items">
-                <div class="comprobante-items-header">
-                    <span>Artículos (${numArticulos})</span>
-                </div>
+            <table class="factura-tabla">
+                <thead>
+                    <tr>
+                        <th>Cant.</th>
+                        <th class="desc">Descripción</th>
+                        <th>Unitario</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
     `;
-    
-    // Agregar items del pedido
-    items.forEach(item => {
+    listaAgrupada.forEach(item => {
+        const detallesCombinados = Array.from(item.detalles).join(", ");
         html += `
-            <div class="comprobante-item">
-                <div class="comprobante-item-nombre">
-                    <span>${item.cantidad}x ${item.nombre}</span>
-                    ${item.detalles ? `<div class="comprobante-item-detalles">${item.detalles}</div>` : ''}
-                </div>
-                <div class="comprobante-item-precio">${formatearPrecio(item.precio * item.cantidad)}</div>
-            </div>
+            <tr>
+                <td>${item.cantidad}</td>
+                <td class="desc">
+                    ${item.nombre}
+                    ${detallesCombinados ? `<div class='factura-item-detalles'>${detallesCombinados}</div>` : ''}
+                </td>
+                <td>$${item.precio.toFixed(2)}</td>
+                <td>$${(item.precio * item.cantidad).toFixed(2)}</td>
+            </tr>
         `;
     });
-    
     html += `
-            </div>
-            
-            <div class="comprobante-total-row">
-                <div class="comprobante-total-label">TOTAL</div>
-                <div class="comprobante-total-valor">${formatearPrecio(total)}</div>
-            </div>
-            
-            <div class="comprobante-footer">
-                <div>¡Gracias por su preferencia!</div>
-                <div>Vuelva pronto</div>
-                <div class="comprobante-fecha-emision">Emitido: ${new Date().toLocaleString()}</div>
+                </tbody>
+                <tfoot>
+                    <tr class="factura-total-row">
+                        <td colspan="3" class="factura-total-label">TOTAL</td>
+                        <td class="factura-total-valor">$${total.toFixed(2)}</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div class="factura-footer">
+                ¡Gracias por su preferencia!<br/>
+                <span style="color:#c00;font-weight:bold;"> </span>
             </div>
         </div>
     `;
-    
     return html;
 }
 
