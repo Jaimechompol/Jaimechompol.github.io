@@ -92,6 +92,29 @@ function crearElementoPedidoCocina(pedido) {
             
             // Nombre (opcional, se puede mostrar al hacer hover)
             iconoItem.title = acomp.nombre;
+
+            // Evento para mostrar el nombre al hacer clic
+            iconoItem.addEventListener('click', function() {
+                // Si ya existe un nombre visible, no crear otro
+                if (iconoItem.querySelector('.nombre-acompanamiento-temp')) return;
+                const nombreTemp = crearElemento('span', { class: 'nombre-acompanamiento-temp' }, acomp.nombre);
+                nombreTemp.style.position = 'absolute';
+                nombreTemp.style.background = '#333';
+                nombreTemp.style.color = '#fff';
+                nombreTemp.style.padding = '2px 8px';
+                nombreTemp.style.borderRadius = '6px';
+                nombreTemp.style.fontSize = '13px';
+                nombreTemp.style.top = '-30px';
+                nombreTemp.style.left = '50%';
+                nombreTemp.style.transform = 'translateX(-50%)';
+                nombreTemp.style.zIndex = '10';
+                nombreTemp.style.pointerEvents = 'none';
+                iconoItem.style.position = 'relative';
+                iconoItem.appendChild(nombreTemp);
+                setTimeout(() => {
+                    if (nombreTemp.parentNode) nombreTemp.parentNode.removeChild(nombreTemp);
+                }, 1500);
+            });
             
             // Agregar al contenedor de iconos
             iconosContainer.appendChild(iconoItem);
