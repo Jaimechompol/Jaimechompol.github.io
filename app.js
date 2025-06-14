@@ -826,28 +826,72 @@ function descargarComprobante() {
 
 // Enviar comprobante por WhatsApp
 function enviarComprobanteWhatsApp() {
-    const contenidoComprobante = document.getElementById('comprobante-contenido');
-    const pedidoId = document.getElementById('modal-comprobante').dataset.pedidoId;
-    
-    // Obtener datos del pedido
-    const cliente = contenidoComprobante.querySelector('.comprobante-info-col:nth-child(2)').textContent;
-    const mesa = contenidoComprobante.querySelector('.comprobante-subtitulo').textContent;
-    const total = contenidoComprobante.querySelector('.comprobante-total-valor').textContent;
-    
-    // Crear mensaje
-    const mensaje = `*${mesa}*\n${cliente}\nTotal: ${total}\n\n¡Gracias por su preferencia!`;
-    
-    // Convertir a imagen y enviar por WhatsApp
-    convertirHTMLaImagen(contenidoComprobante)
-        .then(imagen => {
-            // Enviar mensaje e imagen por WhatsApp
-            enviarPorWhatsApp(mensaje, imagen);
-        })
-        .catch(error => {
-            console.error('Error al generar imagen para WhatsApp:', error);
-            // Si falla la generación de imagen, enviar solo el mensaje
-            enviarPorWhatsApp(mensaje);
-        });
+    try {
+        const contenidoComprobante = document.querySelector('#comprobante-contenido .comprobante-factura');
+        const modalComprobante = document.getElementById('modal-comprobante');
+        
+        if (!contenidoComprobante || !modalComprobante) {
+            throw new Error('No se pudo encontrar el comprobante.');
+        }
+        
+        const pedidoId = modalComprobante.dataset.pedidoId;
+        if (!pedidoId) {
+            throw new Error('No se pudo identificar el pedido.');
+        }
+        
+        // Obtener datos del pedido con manejo de errores
+        const clienteElement = contenidoComprobante.querySelector('.factura-info-dato');
+        const mesaElement = contenidoComprobante.querySelector('.factura-info-row:nth-child(1) .factura-info-dato:last-child');
+        const totalElement = contenidoComprobante.querySelector('.factura-total-valor');
+        
+        if (!clienteElement || !mesaElement || !totalElement) {
+            console.error('Elementos no encontrados:', {
+                clienteElement: !!clienteElement,
+                mesaElement: !!mesaElement,
+                totalElement: !!totalElement,
+                html: contenidoComprobante ? contenidoComprobante.innerHTML : 'No hay contenido en el comprobante'
+            });
+            throw new Error('No se pudieron obtener todos los datos del pedido. Por favor, verifique la estructura del comprobante.');
+        }
+        
+        const cliente = clienteElement.textContent.trim() || 'Cliente no especificado';
+        const mesa = mesaElement.textContent.trim() || 'Mesa no especificada';
+        const total = totalElement.textContent.trim() || '$0.00';
+        
+        // Crear mensaje con formato mejorado
+        const mensaje = `*${mesa.trim()}*\n${cliente.trim()}\n\n*Total: ${total.trim()}*\n\n¡Gracias por su preferencia!`;
+        
+        // Mostrar indicador de carga
+        const botonWhatsApp = document.querySelector('#modal-comprobante .btn-whatsapp');
+        const textoOriginal = botonWhatsApp ? botonWhatsApp.innerHTML : '';
+        
+        if (botonWhatsApp) {
+            botonWhatsApp.disabled = true;
+            botonWhatsApp.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        }
+        
+        // Convertir a imagen y enviar por WhatsApp
+        convertirHTMLaImagen(contenidoComprobante)
+            .then(imagen => {
+                // Enviar mensaje e imagen por WhatsApp
+                enviarPorWhatsApp(mensaje, imagen);
+            })
+            .catch(error => {
+                console.error('Error al generar imagen para WhatsApp:', error);
+                // Si falla la generación de imagen, enviar solo el mensaje
+                enviarPorWhatsApp(mensaje);
+            })
+            .finally(() => {
+                // Restaurar el botón
+                if (botonWhatsApp) {
+                    botonWhatsApp.disabled = false;
+                    botonWhatsApp.innerHTML = textoOriginal || '<i class="fab fa-whatsapp"></i> Enviar por WhatsApp';
+                }
+            });
+    } catch (error) {
+        console.error('Error en enviarComprobanteWhatsApp:', error);
+        alert('Error al preparar el envío por WhatsApp: ' + (error.message || 'Error desconocido'));
+    }
 }
 
 // Guardar comprobante sin descargar ni enviar
