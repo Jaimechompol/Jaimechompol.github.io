@@ -1004,7 +1004,7 @@ function actualizarContadorLimpieza() {
             // Limpiar datos antes de recargar
             guardarDatos('ultima_limpieza', Date.now());
             if (typeof sessionStorage !== 'undefined') {
-                sessionStorage.setItem('ultima_limpieza', JSON.stringify(Date.now()));
+                sessionStorage.setItem('ultima_limpieza ', JSON.stringify(Date.now()));
             }
             // Recargar la página
             location.reload();
