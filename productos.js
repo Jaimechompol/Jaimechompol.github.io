@@ -210,7 +210,7 @@ const productos = [
         precio: 5.0,
         categoria: CATEGORIAS.PLATOS,
         tipo: TIPOS_PRODUCTO.PLATO,
-        descripcion: "Incluye ensalada y una porción adicional (obligatorios)",
+        descripcion: " ",
         acompanamientosObligatorios: [
             { nombre: 'Ensalada', cantidad: 1 },
             { nombre: 'Porción adicional', cantidad: 1 }
@@ -222,7 +222,7 @@ const productos = [
         precio: 5.0,
         categoria: CATEGORIAS.PLATOS,
         tipo: TIPOS_PRODUCTO.PLATO,
-        descripcion: "Incluye ensalada y una porción adicional (obligatorios)",
+        descripcion: " ",
         acompanamientosObligatorios: [
             { nombre: 'Ensalada', cantidad: 1 },
             { nombre: 'Porción adicional', cantidad: 1 }
@@ -439,7 +439,7 @@ const productos = [
         precio: 1.50,
         categoria: CATEGORIAS.BEBIDAS,
         tipo: TIPOS_PRODUCTO.BEBIDA,
-        descripcion: "Botella de cola de 1 litro"
+        descripcion: "Botella de cola de 1.5 litro"
     },
     {
         id: 46,
@@ -495,7 +495,7 @@ const productos = [
         precio: 3.5,
         categoria: CATEGORIAS.BEBIDAS,
         tipo: TIPOS_PRODUCTO.BEBIDA,
-        descripcion: "Jarra de sangría con vino y frutas"
+        descripcion: " "
     },
     {
         id: 53,
@@ -541,7 +541,7 @@ const productos = [
         precio: 7.5,
         categoria: CATEGORIAS.PLATOS,
         tipo: TIPOS_PRODUCTO.PLATO,
-        descripcion: "Seco de gallina tradicional sin acompañamientos obligatorios",
+        descripcion: "Seco de gallina tradicional ",
         sinAcompanamientosObligatorios: true
     },
     
